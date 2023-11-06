@@ -1,57 +1,41 @@
-def encrypt(rawText: str, key: int) -> str:
-    result: str = ''
-    for char in rawText:
-        if char == '\0': break
+def encrypt(char: str, key: int) -> chr:
+    if char.isalpha():
+        base = 'A' if char.isupper() else 'a'
+        return chr(((ord(char) - ord(base) + key) % 26) + ord(base))
+    else:
+        return chr((ord(char) + key) % 68)
 
-        if char.isalpha():
-            base = 'A' if char.isupper() else 'a'
-            result += chr(((ord(char) - ord(base) + key) % 26) + ord(base))
-        else:
-            result += chr((ord(char) + key) % 68)
-        
-    return result
+def decrypt(char: str, key: int) -> chr:
+    if char.isalpha():
+        base = 'A' if char.isupper() else 'a'
+        return chr(((ord(char) - ord(base) - key + 26) % 26) + ord(base))
+    else:
+        return chr((ord(char) - key) % 68)
 
-def decrypt(encryptedText: str, key: int) -> str:
-    result: str = ''
-    for char in encryptedText:
-        if char == '\0': break
-
-        if char.isalpha():
-            base = 'A' if char.isupper() else 'a'
-            result += chr(((ord(char) - ord(base) - key + 26) % 26) + ord(base))
-        else:
-            result += chr((ord(char) - key) % 68)
-        
-    return result
+def process_text(text: str, transformation, key: int) -> str:
+    return ''.join(transformation(char, key) for char in text)
 
 def main():
-    choice: int
     while True:
         print("Choose the command\n\t0. Exit\n\t1. Encrypt text\n\t2. Decrypt text")
-        choice = int(input(">> "))
+        choice: str = int(input(">> "))
         
-        if (choice == 0): break
-        match choice:
-            case 1:
-                fileNameToLoad: str = input("Enter the file name for loading: ")
-                fileNameToSave: str = input("Enter the file name for saving: ")
-                key: int = int(input("Enter the key: "))
+        if choice == 0:
+            break
+        elif choice in (1, 2):
+            fileNameToLoad: str = input("Enter the file name for loading: ")
+            fileNameToSave: str = input("Enter the file name for saving: ")
+            key: int = int(input("Enter the key: "))
 
-                textToEncrypt: str = open(fileNameToLoad).read()
-                encryptedText: str = encrypt(textToEncrypt, key)
-                open(fileNameToSave, 'w').write(encryptedText)
+            text: str = open(fileNameToLoad).read()
+            if choice == 1:
+                transformation = encrypt
+            else:
+                transformation = decrypt
+            processed_text: str = process_text(text, transformation, key)
+            open(fileNameToSave, 'w').write(processed_text)
 
-                print(f"Encrypted text: {encryptedText}")
-            case 2:
-                fileNameToLoad: str = input("Enter the file name for loading: ")
-                fileNameToSave: str = input("Enter the file name for saving: ")
-                key: int = int(input("Enter the key: "))
-
-                textToDecrypt: str = open(fileNameToLoad).read()
-                decryptedText: str = decrypt(textToDecrypt, key)
-                open(fileNameToSave, 'w').write(decryptedText)
-
-                print(f"Decrypted text: {decryptedText}")
+            print(f"Processed text: {processed_text}")
 
 if __name__ == '__main__':
     main()
